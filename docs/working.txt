@@ -1,0 +1,55 @@
+[CORE-CONCEPTS]
+
+    [HEAP-VS-STACK]
+    We are going to use Heap, because the main concept is dynamic memory.
+    Stack -> static
+    Heap -> dynamic
+
+    [SYSTEM-CALLS-FOR-MEMORY-MANAGE]
+    `sbrk / brk` are used to resize the data segment of a proccess. It'll increment the program break and return the previous addr.
+    `mmap` used to map files or devices into memory. The other reason is to allocate large places in da memory. It's more flexible than `sbrk`
+
+    [FRAGMENTATION]
+    Internal Fragmentation : wasted space within an allocated block (due to alignment)
+    External Fragmentation : wasted space between allocated blocks, but it can make it hard to allocate large contiguous chunks in the memory.
+
+    [ALLOCATION-STRATEGIES]
+    First case : Allocate the first block large enough. Fast but can lead to fragmentation.
+    Best case : Allocate the smallest that's large enough. Reduces fragmentation but slower.
+    Worst case : Allocate the largest block. Can help reduce fragmentation in some cases.
+    Buddy case : Allocate blocks in sizes that are powers of two (2,4,8,16... etc.). Easy to merge free blocks but can lead to internal fragmentation.
+
+    [DATA-STRUCTURES-FOR-TRACKING-MEMORY]
+    Free List : A linked list of free memory blocks. Common and simple for implementing.
+    Bitmaps : Used in slab allocators to track free or used blocks.
+    Circular Linked Lists : Efficient for managing free blocks.
+
+[STEPS-FOR-BUILDING-A-CUSTOM-ALLOC]
+    1. We need to understand how `malloc`, `free` and `realloc` works. Their working behavior are the blueprint.
+    2. We are going to choose a allocation strategy; Whether it's free list, buddy case or another method. Each has differences between speed, fragmentation and overhead.
+    3. Implementing core functions; `custom_malloc(size_t size)` should return a pointer to a block of memory of **at least** `size` bytes. `custom_free(void *ptr)` should reclaim the allocated memory. Lastly `custom_realloc(void *ptr, size_t size)` should resize an existing alloc.
+    4. Handling system calls; AI thinks that we can use `sbrk` or `mmap` for requesting memory from the OS(kernel), for small allocs `sbrk` might be enough but for large ones `mmap` is better.
+    5. Testing; We should write tests to check for fragmentation, alignment issues & performance.
+
+[RESOURCES-FOR-RESEARCH]
+    1. TutorialsPoint - Assembly Memory Management; Explains `sys_brk` & provides and asm example.
+    2. Medium - Designing Custom Memory Allocator; Covers API designing, data structures (free lists etc.) & strategies like first-case and best-fit.
+    3. StackOverflow - Assembly Memory Allocation; idk how tf this made it here but some people described it. The discussion topic is virtual memory, fragmentation and alignment issues.
+    4. CPPReferenece - Low Memory Management; Details C++'s memory management utilities, including alloc functions and smart pointers. (we can steal some ideas from there xd)
+    5. NullProgram - Custom Alloc Support; Highlights the importance of context pointers and sized deallocation.
+    6. University of Alaska Fairbanks - Memory alloc in Assembly; Covers `sizeof`, `stack vs heap alloc` & using malloc in asm.
+    7. StackOverflow(again) - Customm Allocators in C; Provides code examples and discussions using sbrk and mmap.
+    8. ROS 2 Tutorial - Custom Memory Allocator; Shows how to integrate custom allocators into real-time systems.
+
+[DIRECT-MEMORY-ACCESS-WITH-ASM]
+    Check `sbrk.asm` & `mmap.asm`
+    
+[ADVANCED-TOPICS-TO-EXPLORE]
+    1. Virtual Memory; We can understand how modern OSes use virtual memory to isolate processes.
+    2. Allocator Performance; We can study the trade-offs between different allocation strategies.
+    3. Integration with Higher-Level Langs; As an example learning how to make our allocator compatible with C++'s `std::allocator` interface.
+
+[ENDING]
+    I think these should be enough for the start.
+        - Mal1koRe1ss
+
