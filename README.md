@@ -37,7 +37,7 @@ Compile your project with `ralloc.c`:
 ```bash
 gcc your_program.c ralloc.c -o your_program
 ```
-> **Note for MSVC Users**: Replace `__asm__` with `__asm` in the source code for Windows compatibility.
+> **Note for MSVC Users**: Replace `__asm__` with `__asm` in the source code for MSVC compatibility.
 
 ## API
 - `void *rallocmem(size_t size)`: Allocates `size` bytes of memory.
