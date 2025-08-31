@@ -47,7 +47,7 @@ gcc your_program.c ralloc.c -o your_program
 
 ### Essential Features
 - [ ] Proper alignment handling
-- [ ] `rreallocmem()` implementation
+- [X] ~~`rreallocmem()` implementation~~
 - [ ] `rcallocmem()` implementation
 
 ### Performance Improvements

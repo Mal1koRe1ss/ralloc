@@ -57,7 +57,59 @@ int main() {
     
     rallocfree(large_buffer);
     printf("PASS: Large buffer freed successfully\n");
-    
+   
+    printf("\n7. Testing reallocation...\n");
+    int *new_numbers = (int *)rallocmem(10 * sizeof(int));
+    if (new_numbers == NULL) {
+        printf("FAIL: Allocation for realloc test failed\n");
+        return 1;
+    }
+
+    for (int i = 0; i < 10;i++) {
+        new_numbers[i] = i * 2;
+    }
+
+    int *resized = (int *)rreallocmem(new_numbers, 20 * sizeof(int));
+    if (resized == NULL) {
+        printf("FAIL: Reallocation failed\n");
+        return 1;
+    }
+    printf("PASS: Reallocation successful\n");
+    rallocfree(resized);
+
+    printf("\n8. Testing NULL reallocation...\n");
+    void *new_alloc = rreallocmem(NULL, 100);
+    if (new_alloc == NULL) {
+        printf("FAIL: NULL reallocation failed\n");
+        return 1;
+    }
+    printf("PASS: NULL reallocation successful\n");
+    rallocfree(new_alloc);
+
+    printf("\n9. Testing zero-size reallocation...\n");
+    void *ptr = rallocmem(100);
+    void *freed_ptr = rreallocmem(ptr, 0);
+    if (freed_ptr != NULL) {
+        printf("FAIL: Zero-size reallocation failed\n");
+        return 1;
+    }
+    printf("PASS: Zero-size reallocation successful\n");
+
+    printf("\n11. Testing memory contents preservation after realloc...\n");
+    int *test_data = (int *)rallocmem(10 * sizeof(int));
+    for (int i = 0; i < 10; i++) {
+        test_data[i] = i + 1;
+    }
+    test_data = (int *)rreallocmem(test_data, 20 * sizeof(int));
+    for (int i = 0; i < 10; i++) {
+        if (test_data[i] != i + 1) {
+            printf("FAIL: Data not preserved after realloc\n");
+            return 1;
+        }
+    }
+    printf("PASS: Data preservation test successful\n");
+    rallocfree(test_data);
+
     printf("\nAll tests passed! Your allocator is working correctly.\n");
     return 0;
 }

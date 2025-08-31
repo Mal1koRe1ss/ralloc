@@ -35,10 +35,12 @@ void *rallocmem(size_t size) {
         return NULL;
     }
 
-    ralloc_header_t *header = (ralloc_header_t *)block;
+    block_meta *header = (block_meta *)block;
     header->size = size;
+    header->free = 0;
+    header->next = NULL;
     header->magic = MAGIC_NUMBER;
-   
+
     return (void *)(header + 1);
 }
 
@@ -46,16 +48,14 @@ void rallocfree(void *ptr) {
     if (ptr == NULL) return;
 
     // Getting the header by moving back from the pointer
-    ralloc_header_t *header = (ralloc_header_t *)ptr - 1;
-    
-    // magic number integrity check
+    block_meta *header = (block_meta *)ptr - 1;
     if (header->magic != MAGIC_NUMBER) {
         fprintf(stderr, "rallocfree: invalid pointer or memory corruption detected\n");
         return;
     }
 
     void *original_block = (void*)header;
-    size_t total_size = sizeof(ralloc_header_t) + header->size;
+    size_t total_size = sizeof(block_meta) + header->size;
 
     int result;
     __asm__ volatile (
@@ -65,7 +65,7 @@ void rallocfree(void *ptr) {
     "syscall\n"
     "mov %%eax, %0\n" // storing result
     : "=m" (result) // output
-    : "i" (SYS_MUMMAP), "r" (original_block), "r" (total_size)
+    : "i" (SYS_MUNMAP), "r" (original_block), "r" (total_size)
     : "rax", "rdi", "rsi", "memory"
     );
 
@@ -73,4 +73,54 @@ void rallocfree(void *ptr) {
         perror("rallocfree: munmap failed\n");
     }
 }
-   
+
+void *rreallocmem(void *ptr, size_t size) {
+    if (ptr == NULL) {
+        return rallocmem(size);
+    }
+
+    if (size == 0) {
+        rallocfree(ptr);
+        return NULL;
+    }
+
+    block_meta *meta_ptr = (block_meta*)ptr - 1;
+    if (meta_ptr->magic != MAGIC_NUMBER) {
+        return NULL; // invalid pointer
+    }
+    if (meta_ptr->free) {
+        return NULL; // already freed
+    }
+    size_t old_size = meta_ptr->size;
+
+    void *new_ptr = rallocmem(size);
+    if (new_ptr == NULL) {
+        return NULL;
+    }
+
+    size_t copy_size = old_size < size ? old_size : size;
+    rallocmemcpy(new_ptr, ptr, copy_size);
+
+    rallocfree(ptr);
+    return new_ptr;
+}
+
+void *rallocmemcpy(void *dest, void *src, size_t n) {
+    __asm__ volatile (
+        "test %2, %2\n" // check if n equals 0
+        "jz 1f\n" // if zero jump to end
+        "0:\n" // start of the loop
+        "movb (%1), %%al\n" // load byte from src
+        "movb %%al, (%0)\n" // store byte to dest
+        "inc %1\n" // increment src pointer
+        "inc %0\n" // increment dest pointer
+        "dec %2\n" // decrement counter
+        "jnz 0b\n" // jump if not zero
+        "1:\n" // end label
+        : "+r" (dest), "+r" (src), "+r" (n)
+        :
+        : "memory", "al"
+    );
+
+    return dest;
+}
