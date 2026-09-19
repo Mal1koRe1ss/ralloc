@@ -1,5 +1,4 @@
-#ifndef RALLOC_H_
-#define RALLOC_H_
+#pragma once
 
 #include <stddef.h> // size_t
 
@@ -23,5 +22,3 @@ void *rallocmem(size_t size);
 void rallocfree(void *ptr);
 void *rreallocmem(void *ptr, size_t size);
 void *rallocmemcpy(void *dest, void *src, size_t n);
-
-#endif
